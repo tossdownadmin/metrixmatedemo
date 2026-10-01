@@ -11,7 +11,7 @@ import { ScopeBanner } from "@/components/ui/scope";
 import { DataTable } from "@/components/ui/table";
 
 export function Ga4() {
-  const { demo, cur, prev, storeIdx, role } = useApp();
+  const { demo, cur, prev, storeIdx } = useApp();
   const [tab, setTab] = useState<"overview" | "acq" | "pages" | "funnel">("overview");
   const t = totals(slice(demo, cur, storeIdx)), p = totals(slice(demo, prev, storeIdx));
   const series = useMemo(() => daily(demo, cur, storeIdx).map(s => ({ date: s.date, sessions: s.sessions, purchases: s.webPurchases })), [demo, cur, storeIdx]);
@@ -60,7 +60,7 @@ export function Ga4() {
         </Card>
       )}
       {tab === "pages" && (
-        <Card title="Landing pages" sub={role === "admin" && storeIdx == null ? "Top store ordering pages plus site pages" : "Site pages and this store's ordering page"} flush>
+        <Card title="Landing pages" sub={storeIdx == null ? "Top store ordering pages plus site pages" : "Site pages and this store's ordering page"} flush>
           <DataTable rows={pages} rowKey={r => r.path} initialSort={{ key: "s", dir: "desc" }} cols={[
             { key: "p", label: "Page path", render: r => <span className="store">{r.path}</span>, sort: r => r.path },
             { key: "s", label: "Sessions", align: "r", render: r => f.num(r.sessions), sort: r => r.sessions },

@@ -28,7 +28,7 @@ export function Dashboard() {
 }
 
 function Overview() {
-  const { demo, cur, prev, ly, storeIdx, store, platform, target, setStoreIdx } = useApp();
+  const { demo, cur, prev, ly, storeIdx, store, platform, target, setTarget, setStoreIdx } = useApp();
   const t = useMemo(() => totals(slice(demo, cur, storeIdx), platform), [demo, cur, storeIdx, platform]);
   const p = useMemo(() => totals(slice(demo, prev, storeIdx), platform), [demo, prev, storeIdx, platform]);
   const stores = useMemo(() => byStore(demo, cur, platform).filter(s => s.t.spend > 0), [demo, cur, platform]);
@@ -61,6 +61,10 @@ function Overview() {
               </>
             )}
           </div>
+          <label className="target-control">
+            <span>Demo ROAS target <b>{target.toFixed(1)}×</b></span>
+            <input type="range" min={3} max={10} step={0.5} value={target} onChange={e => setTarget(Number(e.target.value))} aria-label="ROAS target" />
+          </label>
         </div>
         <div className="hero-right">
           {store ? (
@@ -171,13 +175,13 @@ function StoreCampaigns() {
 }
 
 function StoreTable() {
-  const { demo, cur, prev, platform, target, setStoreIdx, role, storeIdx } = useApp();
+  const { demo, cur, prev, platform, target, setStoreIdx } = useApp();
   const [q, setQ] = useState("");
   const rows = useMemo(() => {
     const p = byStore(demo, prev, platform);
     return byStore(demo, cur, platform).map((s, i) => ({ ...s, prevRoas: p[i].t.roas }));
   }, [demo, cur, prev, platform]);
-  const shown = rows.filter(r => (role === "admin" || r.store.idx === storeIdx) && `${r.store.name} ${r.store.market}`.toLowerCase().includes(q.toLowerCase()));
+  const shown = rows.filter(r => `${r.store.name} ${r.store.market}`.toLowerCase().includes(q.toLowerCase()));
   const all = totals(slice(demo, cur), platform);
   const cols: Col<StoreTotals & { prevRoas: number }>[] = [
     { key: "store", label: "Store", render: r => <span><span className="store">{r.store.name}</span> <span className="sub">{r.store.market}</span>{r.isNew && <> <Pill tone="info">New</Pill></>}</span>, sort: r => r.store.name, foot: `All stores (${shown.length})` },

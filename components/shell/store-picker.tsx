@@ -6,7 +6,7 @@ import { MARKETS } from "@/lib/data";
 import { useApp } from "@/components/context";
 
 export function StorePicker() {
-  const { demo, storeIdx, setStoreIdx, store, role } = useApp();
+  const { demo, storeIdx, setStoreIdx, store } = useApp();
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const ref = useRef<HTMLDivElement>(null);
@@ -15,7 +15,6 @@ export function StorePicker() {
     document.addEventListener("mousedown", h);
     return () => document.removeEventListener("mousedown", h);
   }, []);
-  if (role === "manager") return <span className="picker-btn" style={{ cursor: "default" }}><span className="row"><MapPin size={14} />{store?.name}</span><span className="note">Your store</span></span>;
   const ql = q.toLowerCase();
   return (
     <div className="picker" ref={ref}>

@@ -5,8 +5,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { BRAND } from "@/lib/brand";
 import { makeDemo } from "@/lib/data";
 import { currentAnchor, fmtDate } from "@/lib/dates";
-import { periodRanges, type PlatformFilter } from "@/lib/select";
-import { AppCtx, MANAGER_STORE, type Ctx, type Role, type Screen } from "@/components/context";
+import { periodRanges } from "@/lib/select";
+import { AppCtx, type Ctx, type Screen } from "@/components/context";
 import { allowed, SCREEN_LABEL, Sidebar } from "@/components/shell/sidebar";
 import { StorePicker } from "@/components/shell/store-picker";
 import { Seg } from "@/components/ui/primitives";
@@ -16,12 +16,12 @@ import { SourceComparison } from "@/components/screens/source-comparison";
 import { PosAnalysis } from "@/components/screens/pos";
 import { Insights } from "@/components/screens/insights";
 import { FleetStrategy } from "@/components/screens/fleet";
-import { ReportBuilder } from "@/components/screens/report";
+import { Connectors } from "@/components/screens/connectors";
 import { MetaAds } from "@/components/screens/meta";
 import { GoogleAds } from "@/components/screens/google";
 import { TikTok } from "@/components/screens/tiktok";
 import { Ga4 } from "@/components/screens/ga4";
-import { SystemScreen } from "@/components/screens/system";
+import { LocalMarket } from "@/components/screens/local-market";
 
 const SUBTITLE: Record<Screen, string> = {
   dashboard: "Store ROAS against target, with POS sales and paid media in one view",
@@ -29,20 +29,14 @@ const SUBTITLE: Record<Screen, string> = {
   "source-comparison": "Where orders come from, store by store",
   pos: "Sales, menu, customers and channels from the point of sale",
   insights: "What changed, why it matters and what to do next",
+  local: "Local visibility, guest feedback and nearby competition",
   fleet: "Plays that move the whole chain, ranked by impact",
-  report: "Build a client-ready report and save it as PDF",
   meta: "Facebook and Instagram campaigns, tied back to store revenue",
   google: "Search and Performance Max campaigns, tied back to store revenue",
   tiktok: "Fleet-level TikTok campaigns and creative performance",
   ga4: "Website and ordering funnel from Google Analytics 4",
-  connections: "Data sources feeding this workspace",
-  connectors: "Sources you can connect to MetrixMate",
-  sync: "Every data refresh, with row counts and run times",
-  settings: "Workspace preferences and targets",
-  admin: "Users, roles and page access",
+  connectors: "Available data sources and their demo coverage",
 };
-const PLATFORM_SCREENS: Screen[] = ["dashboard", "insights"];
-const NO_RANGE: Screen[] = ["sales-comparison", "connections", "connectors", "sync", "settings", "admin"];
 
 function readHash(): Screen | null {
   const h = window.location.hash.replace(/^#\/?/, "");
@@ -55,38 +49,31 @@ export default function App() {
   const [screen, setScreen] = useState<Screen>(() => readHash() ?? "dashboard");
   const [days, setDays] = useState(30);
   const [storeIdx, setStoreIdxRaw] = useState<number | null>(null);
-  const [platform, setPlatform] = useState<PlatformFilter>("all");
-  const [role, setRoleRaw] = useState<Role>("admin");
   const [target, setTarget] = useState<number>(BRAND.defaultTargetRoas);
   const [navOpen, setNavOpen] = useState(false);
 
-  const setStoreIdx = useCallback((i: number | null) => { if (role === "admin") setStoreIdxRaw(i); }, [role]);
+  const setStoreIdx = useCallback((i: number | null) => setStoreIdxRaw(i), []);
   const go = useCallback((s: Screen, idx?: number | null) => {
     setScreen(s);
-    if (idx !== undefined && role === "admin") setStoreIdxRaw(idx);
+    if (idx !== undefined) setStoreIdxRaw(idx);
     window.history.replaceState(null, "", `#/${s}`);
     window.scrollTo({ top: 0 });
-  }, [role]);
-  const setRole = (r: Role) => {
-    setRoleRaw(r);
-    setStoreIdxRaw(r === "manager" ? MANAGER_STORE : null);
-    if (!allowed(screen, r)) go("dashboard");
-  };
+  }, []);
   useEffect(() => {
-    const h = () => { const s = readHash(); if (s) setScreen(s); };
+    const h = () => { setScreen(readHash() ?? "dashboard"); };
     window.addEventListener("hashchange", h);
     return () => window.removeEventListener("hashchange", h);
   }, []);
   useEffect(() => { document.title = `${SCREEN_LABEL[screen]} | ${BRAND.name}`; }, [screen]);
 
   const { cur, prev, ly } = useMemo(() => periodRanges(demo, days), [demo, days]);
-  const ctx: Ctx = { demo, days, setDays, storeIdx, setStoreIdx, store: storeIdx != null ? demo.stores[storeIdx] : null, platform, setPlatform, role, target, setTarget, screen, go, cur, prev, ly };
-  const safeScreen = allowed(screen, role) ? screen : "dashboard";
+  const ctx: Ctx = { demo, days, setDays, storeIdx, setStoreIdx, store: storeIdx != null ? demo.stores[storeIdx] : null, platform: "all", target, setTarget, screen, go, cur, prev, ly };
+  const safeScreen = allowed(screen) ? screen : "dashboard";
 
   return (
     <AppCtx.Provider value={ctx}>
       <div className="shell">
-        <Sidebar open={navOpen} onNavigate={() => setNavOpen(false)} onRole={setRole} />
+        <Sidebar open={navOpen} onNavigate={() => setNavOpen(false)} />
         {navOpen && <div className="overlay" onClick={() => setNavOpen(false)} />}
         <div className="main">
           <header className="top">
@@ -95,20 +82,11 @@ export default function App() {
               <h1>{SCREEN_LABEL[safeScreen]}</h1>
               <p>{SUBTITLE[safeScreen]}</p>
             </div>
-            <div className="top-controls">
-              {PLATFORM_SCREENS.includes(safeScreen) && (
-                <select className="select" value={platform} onChange={e => setPlatform(e.target.value as PlatformFilter)} aria-label="Ad platform">
-                  <option value="all">Google + Meta</option>
-                  <option value="google">Google Ads only</option>
-                  <option value="meta">Meta Ads only</option>
-                </select>
-              )}
-              {!NO_RANGE.includes(safeScreen) && (
-                <Seg label="Date range" value={days} onChange={setDays} options={[7, 14, 30, 60, 90].map(d => ({ id: d, label: `${d}D` }))} />
-              )}
-              {!["connections", "connectors", "sync", "settings", "admin", "tiktok"].includes(safeScreen) && <StorePicker />}
+            {safeScreen !== "connectors" && <div className="top-controls">
+              <Seg label="Date range" value={days} onChange={setDays} options={[7, 14, 30, 60, 90].map(d => ({ id: d, label: `${d}D` }))} />
+              {!["tiktok", "fleet"].includes(safeScreen) && <StorePicker />}
               <span className="fresh" title="Simulated data, refreshed daily"><i />Data through {fmtDate(demo.anchor)}</span>
-            </div>
+            </div>}
           </header>
           <main className="content">
             {safeScreen === "dashboard" && <Dashboard />}
@@ -116,13 +94,13 @@ export default function App() {
             {safeScreen === "source-comparison" && <SourceComparison />}
             {safeScreen === "pos" && <PosAnalysis />}
             {safeScreen === "insights" && <Insights />}
+            {safeScreen === "local" && <LocalMarket />}
             {safeScreen === "fleet" && <FleetStrategy />}
-            {safeScreen === "report" && <ReportBuilder />}
+            {safeScreen === "connectors" && <Connectors />}
             {safeScreen === "meta" && <MetaAds />}
             {safeScreen === "google" && <GoogleAds />}
             {safeScreen === "tiktok" && <TikTok />}
             {safeScreen === "ga4" && <Ga4 />}
-            {["connections", "connectors", "sync", "settings", "admin"].includes(safeScreen) && <SystemScreen screen={safeScreen} />}
           </main>
         </div>
       </div>

@@ -7,7 +7,8 @@ Standalone pitch demo. Next.js App Router, TypeScript, Recharts, lucide-react. P
 - `lib/brand.ts`: brand name and default ROAS target.
 - `lib/data.ts`: deterministic generator. 42 stores × 460 days, stored date-major (`rows[d * stores + s]`). Planted stories are marked with comments.
 - `lib/select.ts`: all aggregation (ranges, totals, per-store, daily series, products, dayparts, campaigns, cohorts, GA4 models). Screens must aggregate through here so numbers reconcile across screens.
-- `lib/insights.ts`: rule-based findings for Store Insights and Report Builder.
+- `lib/local-signals.ts`: deterministic fictional local profile, review, social and competitor signals for the Local Market & Reputation screen. This is presentation data, not an integration or causal attribution model.
+- `lib/insights.ts`: rule-based findings for Store Insights and Fleet Strategy.
 - `components/app.tsx`: state, routing (URL hash), top bar. `components/context.tsx`: shared context.
 - `components/ui/*`: primitives, table, charts (including the ROAS ruler).
 - `components/screens/*`: one file per screen.
@@ -15,6 +16,7 @@ Standalone pitch demo. Next.js App Router, TypeScript, Recharts, lucide-react. P
 ## Rules
 
 - Never add real client names, store names, hostnames, account IDs or credentials. All data stays synthetic.
+- Keep the top-level controls to date range followed by store (except fleet-only screens; Connectors needs neither). Keep the local-signal data clearly labeled as simulated and separate from paid-attributed POS revenue. Connector catalog entries must not be described as live integrations.
 - Store ROAS = store-campaign spend (name contains `NS | <TOKEN>`) vs attributed POS revenue. Fleet, brand, awareness and legacy campaigns are shown but excluded from store ROAS.
 - The app renders client-only (`components/client-root.tsx`, `ssr: false`) because the data is anchored to the viewer's current date.
 - Run `npx tsc --noEmit` and `npm run build` before committing.

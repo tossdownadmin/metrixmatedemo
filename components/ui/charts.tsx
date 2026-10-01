@@ -53,10 +53,10 @@ export function TrendChart({ data, series, height = 260, left = f.moneyK, right,
         <Tooltip content={<TipBox fmts={fmts} labelFmt={l => (xKey === "date" ? fmtDate(l, { weekday: "short", month: "short", day: "numeric" }) : l)} />} cursor={{ stroke: C.grey, strokeDasharray: "3 3" }} />
         {refLine && <ReferenceLine yAxisId={refLine.axis ?? "left"} y={refLine.y} stroke={C.saffron} strokeDasharray="5 4" label={{ value: refLine.label, position: "insideTopRight", fill: C.saffron, fontSize: 11.5 }} />}
         {series.map(s => {
-          const common = { key: s.key, dataKey: s.key, name: s.label, yAxisId: s.axis ?? "left", isAnimationActive: false } as const;
-          if (s.type === "bar") return <Bar {...common} fill={s.color} radius={s.stack ? 0 : [3, 3, 0, 0]} stackId={s.stack} maxBarSize={22} />;
-          if (s.type === "area") return <Area {...common} type="monotone" stroke={s.color} strokeWidth={2} fill={`url(#g-${s.key})`} dot={false} />;
-          return <Line {...common} type="monotone" stroke={s.color} strokeWidth={s.dashed ? 1.6 : 2} strokeDasharray={s.dashed ? "5 4" : undefined} dot={false} />;
+          const common = { dataKey: s.key, name: s.label, yAxisId: s.axis ?? "left", isAnimationActive: false } as const;
+          if (s.type === "bar") return <Bar key={s.key} {...common} fill={s.color} radius={s.stack ? 0 : [3, 3, 0, 0]} stackId={s.stack} maxBarSize={22} />;
+          if (s.type === "area") return <Area key={s.key} {...common} type="monotone" stroke={s.color} strokeWidth={2} fill={`url(#g-${s.key})`} dot={false} />;
+          return <Line key={s.key} {...common} type="monotone" stroke={s.color} strokeWidth={s.dashed ? 1.6 : 2} strokeDasharray={s.dashed ? "5 4" : undefined} dot={false} />;
         })}
       </ComposedChart>
     </ResponsiveContainer>

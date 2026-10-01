@@ -15,10 +15,9 @@ type Tab = "overview" | "menu" | "customers" | "stores" | "channels";
 
 export function PosAnalysis() {
   const [tab, setTab] = useState<Tab>("overview");
-  const { role } = useApp();
   const opts: { id: Tab; label: string }[] = [
     { id: "overview", label: "Dashboard" }, { id: "menu", label: "Menu" }, { id: "customers", label: "Customers" },
-    ...(role === "admin" ? [{ id: "stores" as Tab, label: "Store comparison" }] : []),
+    { id: "stores", label: "Store comparison" },
     { id: "channels", label: "First-party vs third-party" },
   ];
   return (
@@ -202,7 +201,7 @@ function Stores() {
 }
 
 function Channels() {
-  const { demo, cur, prev, storeIdx, setStoreIdx, role } = useApp();
+  const { demo, cur, prev, storeIdx, setStoreIdx } = useApp();
   const t = totals(slice(demo, cur, storeIdx)), p = totals(slice(demo, prev, storeIdx));
   const fpS = (x: typeof t) => FIRST_PARTY.reduce((a, s) => a + x.srcSales[SOURCES.indexOf(s)], 0);
   const tpS = (x: typeof t) => THIRD_PARTY.reduce((a, s) => a + x.srcSales[SOURCES.indexOf(s)], 0);
@@ -226,7 +225,7 @@ function Channels() {
           <div style={{ marginTop: 10 }}><Legend items={SOURCES.map((s, j) => ({ label: s, color: SOURCE_COLORS[j] }))} /></div>
         </Card>
       </div>
-      {role === "admin" && storeIdx == null && (
+      {storeIdx == null && (
         <Card title="Stores most dependent on marketplaces" sub="Highest marketplace share first. These are the best candidates for app ordering promotions." flush>
           <DataTable rows={stores.slice(0, 12)} rowKey={r => r.store.id} onRow={r => setStoreIdx(r.store.idx)} cols={[
             { key: "s", label: "Store", render: r => <span className="store">{r.store.name}</span> },

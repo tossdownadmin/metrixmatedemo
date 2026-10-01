@@ -5,11 +5,8 @@ import type { Demo, Store } from "@/lib/data";
 import type { PlatformFilter, Range } from "@/lib/select";
 
 export type Screen =
-  | "dashboard" | "sales-comparison" | "source-comparison" | "pos" | "insights" | "fleet" | "report"
-  | "meta" | "google" | "tiktok" | "ga4"
-  | "connections" | "connectors" | "sync" | "settings" | "admin";
-
-export type Role = "admin" | "manager";
+  | "dashboard" | "sales-comparison" | "source-comparison" | "pos" | "insights" | "local" | "fleet"
+  | "meta" | "google" | "tiktok" | "ga4" | "connectors";
 
 export type Ctx = {
   demo: Demo;
@@ -19,8 +16,6 @@ export type Ctx = {
   setStoreIdx: (i: number | null) => void;
   store: Store | null;
   platform: PlatformFilter;
-  setPlatform: (p: PlatformFilter) => void;
-  role: Role;
   target: number;
   setTarget: (t: number) => void;
   screen: Screen;
@@ -36,4 +31,3 @@ export function useApp() {
   if (!c) throw new Error("useApp outside provider");
   return c;
 }
-export const MANAGER_STORE = 0;
