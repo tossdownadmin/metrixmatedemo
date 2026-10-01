@@ -1,21 +1,20 @@
-# Northstar Slice Co. Demo
+# Agent notes
 
-This is a standalone pitch demo for a fictional 42-location North American pizza chain. The supplied MetrixMate project is read-only reference material for screen names, layout, and behavior. All stores, products, campaigns, customers, metrics, and sync activity in this project must be synthetic.
+Standalone pitch demo. Next.js App Router, TypeScript, Recharts, lucide-react. Plain CSS design system in `app/globals.css` (tokens at the top). No Tailwind.
 
-## Current app
+## Layout
 
-- Next.js App Router and TypeScript; `npm run dev` uses webpack.
-- `app/page.tsx` passes the last completed UTC day to the client.
-- `components/demo-app.tsx` owns the reference-style navigation, top filters, and shared presentation components.
-- `components/demo-screens.tsx` owns the eleven analytics screens and their tabs/drilldowns.
-- `components/system-screens.tsx` owns the five utility/admin screens.
-- `lib/demo-data.ts` generates 180 days of deterministic fictional data for 42 stores.
-- `public/demo.css` is linked from `app/layout.tsx`. Do not reintroduce its import into a Next CSS bundle without checking build performance.
+- `lib/brand.ts`: brand name and default ROAS target.
+- `lib/data.ts`: deterministic generator. 42 stores × 460 days, stored date-major (`rows[d * stores + s]`). Planted stories are marked with comments.
+- `lib/select.ts`: all aggregation (ranges, totals, per-store, daily series, products, dayparts, campaigns, cohorts, GA4 models). Screens must aggregate through here so numbers reconcile across screens.
+- `lib/insights.ts`: rule-based findings for Store Insights and Report Builder.
+- `components/app.tsx`: state, routing (URL hash), top bar. `components/context.tsx`: shared context.
+- `components/ui/*`: primitives, table, charts (including the ROAS ruler).
+- `components/screens/*`: one file per screen.
 
-## Guardrails
+## Rules
 
-- Never copy reference-client records, identifiers, locations, product names, credentials, exports, or production API calls into this project.
-- Label values as simulated. Do not imply the dummy Connections or sync status are live.
-- Keep screen names and navigation aligned with `docs/reference-screen-contract.md`.
-- Before adding a new metric, make date/store/platform filtering and cross-screen totals consistent.
-- No push or deployment without the user's explicit approval.
+- Never add real client names, store names, hostnames, account IDs or credentials. All data stays synthetic.
+- Store ROAS = store-campaign spend (name contains `NS | <TOKEN>`) vs attributed POS revenue. Fleet, brand, awareness and legacy campaigns are shown but excluded from store ROAS.
+- The app renders client-only (`components/client-root.tsx`, `ssr: false`) because the data is anchored to the viewer's current date.
+- Run `npx tsc --noEmit` and `npm run build` before committing.
